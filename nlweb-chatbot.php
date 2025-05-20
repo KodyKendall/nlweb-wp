@@ -7,6 +7,36 @@ Author: You
 */
 
 add_action('wp_footer', 'nlweb_inject_chatbot');
+add_action('wp_ajax_nopriv_nlweb_query', 'nlweb_query_handler');
+add_action('wp_ajax_nlweb_query', 'nlweb_query_handler');
+
+function nlweb_query_handler() {
+    header('Content-Type: text/event-stream');
+    header('Cache-Control: no-cache');
+    header('Connection: keep-alive');
+    
+    $query = isset($_GET['query']) ? $_GET['query'] : '';
+    if (empty($query)) {
+        echo "data: " . json_encode(['message_type' => 'error', 'message' => 'Query is required']) . "\n\n";
+        exit;
+    }
+    
+    $url = "http://localhost:8000/ask?query=" . urlencode($query) . "&generate_mode=summarize";
+    
+    $curl = curl_init();
+    curl_setopt($curl, CURLOPT_URL, $url);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, false);
+    curl_setopt($curl, CURLOPT_HEADER, false);
+    curl_setopt($curl, CURLOPT_WRITEFUNCTION, function($curl, $data) {
+        echo $data;
+        flush();
+        return strlen($data);
+    });
+    
+    curl_exec($curl);
+    curl_close($curl);
+    exit;
+}
 
 function nlweb_inject_chatbot() {
     ?>
@@ -105,7 +135,7 @@ function nlweb_inject_chatbot() {
 
             input.value = "";
 
-            fetch("http://localhost:8000/ask?query=" + encodeURIComponent(query) + "&generate_mode=summarize", {
+            fetch("<?php echo admin_url('admin-ajax.php'); ?>?action=nlweb_query&query=" + encodeURIComponent(query), {
                 headers: { Accept: "text/event-stream" },
             })
             .then(response => {
