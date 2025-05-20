@@ -6,6 +6,52 @@ Version: 1.0
 Author: You
 */
 
+// Register settings
+add_action('admin_init', 'nlweb_register_settings');
+function nlweb_register_settings() {
+    register_setting('nlweb_options_group', 'nlweb_server_url', array(
+        'default' => 'http://localhost:8000',
+        'sanitize_callback' => 'esc_url_raw'
+    ));
+}
+
+// Add settings page
+add_action('admin_menu', 'nlweb_add_settings_page');
+function nlweb_add_settings_page() {
+    add_options_page(
+        'NLWeb Chatbot Settings',
+        'NLWeb Chatbot',
+        'manage_options',
+        'nlweb-settings',
+        'nlweb_render_settings_page'
+    );
+}
+
+// Render settings page
+function nlweb_render_settings_page() {
+    ?>
+    <div class="wrap">
+        <h1>NLWeb Chatbot Settings</h1>
+        <form method="post" action="options.php">
+            <?php
+            settings_fields('nlweb_options_group');
+            do_settings_sections('nlweb-settings');
+            ?>
+            <table class="form-table">
+                <tr valign="top">
+                    <th scope="row">NLWeb Server URL</th>
+                    <td>
+                        <input type="url" name="nlweb_server_url" value="<?php echo esc_attr(get_option('nlweb_server_url', 'http://localhost:8000')); ?>" class="regular-text" />
+                        <p class="description">The URL of your NLWeb server (e.g., http://localhost:8000)</p>
+                    </td>
+                </tr>
+            </table>
+            <?php submit_button(); ?>
+        </form>
+    </div>
+    <?php
+}
+
 add_action('wp_footer', 'nlweb_inject_chatbot');
 add_action('wp_ajax_nopriv_nlweb_query', 'nlweb_query_handler');
 add_action('wp_ajax_nlweb_query', 'nlweb_query_handler');
@@ -21,7 +67,8 @@ function nlweb_query_handler() {
         exit;
     }
     
-    $url = "http://localhost:8000/ask?query=" . urlencode($query) . "&generate_mode=summarize";
+    $server_url = get_option('nlweb_server_url', 'http://localhost:8000');
+    $url = trailingslashit($server_url) . "ask?query=" . urlencode($query) . "&generate_mode=summarize";
     
     $curl = curl_init();
     curl_setopt($curl, CURLOPT_URL, $url);
