@@ -1,14 +1,14 @@
-=== NLWeb for WordPress ===
+=== NLWeb AI Chatbot ===
 Contributors: kodykendall
-Tags: ai, chatbot, nlweb, microsoft, llm, conversational ai, rss, content
+Tags: ai, chatbot, nlweb, conversational-ai, content
 Requires at least: 5.5
-Tested up to: 6.5
+Tested up to: 6.8
 Requires PHP: 7.4
 Stable tag: 1.0.0
-License: GPLv2
-License URI: https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Bring AI-powered chat to your WordPress site — using your own content. Let visitors have natural conversations with your blog posts, podcast episodes, and pages.
+Bring AI-powered chat to your site using your own content. Let visitors have natural conversations with your blog posts and pages.
 
 == Description ==
 
@@ -21,7 +21,6 @@ This plugin exposes your site content through a clean, structured RSS feed compa
 * **Auto-generated NLWeb-compatible RSS feed** of your site's content
 * **AI chat interface** embedded automatically on your pages, and powered by your content
 * Works out of the box with open-source [NLWeb server](https://github.com/microsoft/nlweb)
-* Users can **ask natural language questions** and get AI responses grounded in your real content
 
 = 🖼️ Demo =
 
@@ -89,7 +88,7 @@ If you want us to add settings to customize the style and feel, please create an
 = How does this differ from other AI chat plugins? =
 
 1. Completely free and open source.
-2. NLWeb for WordPress grounds all AI responses in your actual content rather than generating potentially inaccurate responses. It uses your site's content as the knowledge base.
+2. NLWeb AI Chatbot grounds all AI responses in your actual content rather than generating potentially inaccurate responses. It uses your site's content as the knowledge base.
 
 == Changelog ==
 
@@ -99,7 +98,7 @@ If you want us to add settings to customize the style and feel, please create an
 == Upgrade Notice ==
 
 = 1.0.0 =
-Initial release of NLWeb for WordPress. Bring conversational AI to your site!
+Initial release of NLWeb AI Chatbot. Bring conversational AI to your site!
 
 == Contribute ==
 

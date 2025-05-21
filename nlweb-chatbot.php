@@ -1,9 +1,11 @@
 <?php
 /*
-Plugin Name: NLWeb AI Chatbot for WordPress
-Description: Turns your WordPress site and existing content into an AI chatbot using the new NLWeb protocol. Just add the plugin, and enter the NLWeb server URL. For detailed instructions on setting up an NLWeb server and configuring this plugin, see https://github.com/nlweb-ai/quickstart. (Please give us a star if you like the project!)
-Version: 1.0
+Plugin Name: NLWeb AI Chatbot
+Description: Turns your site content into an AI chatbot using the NLWeb protocol. Just add the plugin and enter the NLWeb server URL. For detailed instructions, see https://github.com/nlweb-ai/quickstart.
+Version: 1.0.0
 Author: Kody Kendall
+License: GPLv2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
 */
 
 // Register settings
@@ -58,35 +60,53 @@ add_action('wp_ajax_nopriv_nlweb_query', 'nlweb_query_handler');
 add_action('wp_ajax_nlweb_query', 'nlweb_query_handler');
 
 function nlweb_query_handler() {
+    // Verify and sanitize input
+    if (!isset($_GET['query']) || !check_ajax_referer('nlweb_query_nonce', 'nonce', false)) {
+        $error_response = json_encode(['message_type' => 'error', 'message' => 'Invalid request']);
+        echo "data: " . esc_html($error_response) . "\n\n";
+        exit;
+    }
+    
+    $query = sanitize_text_field(wp_unslash($_GET['query']));
+    if (empty($query)) {
+        $error_response = json_encode(['message_type' => 'error', 'message' => 'Query is required']);
+        echo "data: " . esc_html($error_response) . "\n\n";
+        exit;
+    }
+    
     header('Content-Type: text/event-stream');
     header('Cache-Control: no-cache');
     header('Connection: keep-alive');
     
-    $query = isset($_GET['query']) ? $_GET['query'] : '';
-    if (empty($query)) {
-        echo "data: " . json_encode(['message_type' => 'error', 'message' => 'Query is required']) . "\n\n";
-        exit;
-    }
-    
     $server_url = get_option('nlweb_server_url', 'http://localhost:8000');
     $url = trailingslashit($server_url) . "ask?query=" . urlencode($query) . "&generate_mode=summarize";
     
-    $curl = curl_init();
-    curl_setopt($curl, CURLOPT_URL, $url);
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, false);
-    curl_setopt($curl, CURLOPT_HEADER, false);
-    curl_setopt($curl, CURLOPT_WRITEFUNCTION, function($curl, $data) {
-        echo $data;
-        flush();
-        return strlen($data);
-    });
+    // Set up non-blocking stream request
+    $args = array(
+        'timeout' => 0.01, // Very short timeout to return quickly
+        'blocking' => false,
+        'stream' => true,
+        'filename' => null, // Stream to output
+        'headers' => array(
+            'Accept' => 'text/event-stream'
+        )
+    );
     
-    curl_exec($curl);
-    curl_close($curl);
+    // Open a connection to the NLWeb server
+    $response = wp_remote_get($url, $args);
+    
+    // If there's an error, return it to the client
+    if (is_wp_error($response)) {
+        $error_response = json_encode(['message_type' => 'error', 'message' => $response->get_error_message()]);
+        echo "data: " . esc_html($error_response) . "\n\n";
+    }
+    
     exit;
 }
 
 function nlweb_inject_chatbot() {
+    // Generate a nonce for AJAX requests
+    $nonce = wp_create_nonce('nlweb_query_nonce');
     ?>
     <style>
         #nlweb-chat-button {
@@ -323,7 +343,7 @@ function nlweb_inject_chatbot() {
 
             input.value = "";
 
-            fetch("<?php echo admin_url('admin-ajax.php'); ?>?action=nlweb_query&query=" + encodeURIComponent(query), {
+            fetch("<?php echo esc_url(admin_url('admin-ajax.php')); ?>?action=nlweb_query&query=" + encodeURIComponent(query) + "&nonce=<?php echo esc_js($nonce); ?>", {
                 headers: { Accept: "text/event-stream" },
             })
             .then(response => {
