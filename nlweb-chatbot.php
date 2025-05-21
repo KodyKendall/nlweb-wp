@@ -1,9 +1,9 @@
 <?php
 /*
-Plugin Name: NLWeb Chatbot
-Description: Adds a floating AI chatbot to your WordPress site, powered by your NLWeb server.
+Plugin Name: NLWeb AI Chatbot for WordPress
+Description: Turns your WordPress site and existing content into an AI chatbot using the new NLWeb protocol. Just add the plugin, and enter the NLWeb server URL. For detailed instructions on setting up an NLWeb server and configuring this plugin, see https://github.com/nlweb-ai/quickstart. (Please give us a star if you like the project!)
 Version: 1.0
-Author: You
+Author: Kody Kendall
 */
 
 // Register settings
