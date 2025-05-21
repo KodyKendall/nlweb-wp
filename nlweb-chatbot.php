@@ -27,6 +27,7 @@ function nlweb_add_settings_page() {
     );
 }
 
+
 // Render settings page
 function nlweb_render_settings_page() {
     ?>
@@ -100,62 +101,191 @@ function nlweb_inject_chatbot() {
             font-size: 16px;
             cursor: pointer;
             z-index: 10000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        #nlweb-chat-button:hover {
+            background: #0063b1;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
         }
 
         #nlweb-chat-container {
             position: fixed;
-            bottom: 70px;
+            bottom: 80px;
             right: 20px;
-            width: 350px;
-            height: 500px;
+            width: 370px;
+            height: 550px;
             background: white;
-            border: 1px solid #ccc;
-            border-radius: 12px;
+            border: none;
+            border-radius: 16px;
             display: none;
             flex-direction: column;
             overflow: hidden;
             z-index: 10000;
-            box-shadow: 0 0 10px rgba(0,0,0,0.2);
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
         }
 
         #nlweb-chat-header {
-            padding: 10px;
-            background: #f3f3f3;
-            font-weight: bold;
-            border-bottom: 1px solid #ccc;
+            padding: 16px;
+            background: #f8f8f8;
+            font-weight: 600;
+            border-bottom: 1px solid #eaeaea;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        #nlweb-chat-header-close {
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+        
+        #nlweb-chat-header-close:hover {
+            background: #eaeaea;
+            color: #333;
         }
 
         #nlweb-chat-messages {
             flex: 1;
-            padding: 10px;
+            padding: 16px;
             overflow-y: auto;
+            background: #f5f7f9;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .nlweb-message {
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
             font-size: 14px;
+            line-height: 1.5;
+            position: relative;
+            word-wrap: break-word;
+        }
+        
+        .nlweb-user-message {
+            align-self: flex-end;
+            background: #0078d4;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .nlweb-ai-message {
+            align-self: flex-start;
+            background: white;
+            color: #333;
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
 
         #nlweb-chat-input {
             display: flex;
-            border-top: 1px solid #ccc;
+            border-top: 1px solid #eaeaea;
+            padding: 12px;
+            background: white;
         }
 
         #nlweb-chat-input input {
             flex: 1;
-            border: none;
-            padding: 10px;
+            border: 1px solid #dedede;
+            border-radius: 24px;
+            padding: 10px 16px;
             font-size: 14px;
+            outline: none;
+            transition: border 0.2s;
+        }
+        
+        #nlweb-chat-input input:focus {
+            border-color: #0078d4;
         }
 
         #nlweb-chat-input button {
             border: none;
             background: #0078d4;
             color: white;
-            padding: 10px 16px;
+            border-radius: 24px;
+            padding: 10px 18px;
+            margin-left: 8px;
             cursor: pointer;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        
+        #nlweb-chat-input button:hover {
+            background: #0063b1;
+        }
+        
+        #nlweb-typing-indicator {
+            display: none;
+            align-self: flex-start;
+            background: #e6e6e6;
+            border-radius: 18px;
+            padding: 12px 16px;
+            margin-top: 4px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .nlweb-typing-dot {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background-color: #666;
+            animation: nlwebTypingAnimation 1.4s infinite ease-in-out;
+            margin-right: 2px;
+        }
+        
+        .nlweb-typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+        
+        .nlweb-typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+            margin-right: 0;
+        }
+        
+        @keyframes nlwebTypingAnimation {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-4px); }
         }
     </style>
 
     <div id="nlweb-chat-container">
-        <div id="nlweb-chat-header">Ask me anything</div>
-        <div id="nlweb-chat-messages"></div>
+        <div id="nlweb-chat-header">
+            <span>Ask me anything</span>
+            <button id="nlweb-chat-header-close" onclick="nlwebToggleChat()">×</button>
+        </div>
+        <div id="nlweb-chat-messages">
+            <div class="nlweb-message nlweb-ai-message">
+                Hello! How can I help you today?
+            </div>
+        </div>
+        <div id="nlweb-typing-indicator">
+            <span class="nlweb-typing-dot"></span>
+            <span class="nlweb-typing-dot"></span>
+            <span class="nlweb-typing-dot"></span>
+        </div>
         <div id="nlweb-chat-input">
             <input type="text" id="nlweb-chat-query" placeholder="Ask a question..." />
             <button onclick="nlwebSendQuery()">Send</button>
@@ -168,6 +298,9 @@ function nlweb_inject_chatbot() {
         function nlwebToggleChat() {
             const chat = document.getElementById('nlweb-chat-container');
             chat.style.display = (chat.style.display === 'none' || chat.style.display === '') ? 'flex' : 'none';
+            if (chat.style.display === 'flex') {
+                document.getElementById('nlweb-chat-query').focus();
+            }
         }
 
         function nlwebSendQuery() {
@@ -177,8 +310,16 @@ function nlweb_inject_chatbot() {
 
             const messages = document.getElementById('nlweb-chat-messages');
             const userMsg = document.createElement('div');
-            userMsg.textContent = "You: " + query;
+            userMsg.className = 'nlweb-message nlweb-user-message';
+            userMsg.textContent = query;
             messages.appendChild(userMsg);
+            
+            // Show typing indicator
+            const typingIndicator = document.getElementById('nlweb-typing-indicator');
+            typingIndicator.style.display = 'block';
+            
+            // Scroll to bottom
+            messages.scrollTop = messages.scrollHeight;
 
             input.value = "";
 
@@ -189,10 +330,16 @@ function nlweb_inject_chatbot() {
                 const reader = response.body.getReader();
                 const decoder = new TextDecoder("utf-8");
                 let buffer = "";
+                let aiMsg = null;
 
                 function read() {
                     return reader.read().then(({ done, value }) => {
-                        if (done) return;
+                        if (done) {
+                            // Hide typing indicator when done
+                            typingIndicator.style.display = 'none';
+                            return;
+                        }
+                        
                         buffer += decoder.decode(value, { stream: true });
                         const lines = buffer.split("\n");
 
@@ -202,9 +349,17 @@ function nlweb_inject_chatbot() {
                                 try {
                                     const event = JSON.parse(json);
                                     if (event.message_type === "summary") {
-                                        const aiMsg = document.createElement('div');
-                                        aiMsg.textContent = "AI: " + event.message;
-                                        messages.appendChild(aiMsg);
+                                        // Hide typing indicator
+                                        typingIndicator.style.display = 'none';
+                                        
+                                        // Create message if it doesn't exist
+                                        if (!aiMsg) {
+                                            aiMsg = document.createElement('div');
+                                            aiMsg.className = 'nlweb-message nlweb-ai-message';
+                                            messages.appendChild(aiMsg);
+                                        }
+                                        
+                                        aiMsg.textContent = event.message;
                                         messages.scrollTop = messages.scrollHeight;
                                     }
                                 } catch (_) {}
@@ -217,8 +372,25 @@ function nlweb_inject_chatbot() {
                 }
 
                 read();
+            })
+            .catch(error => {
+                // Hide typing indicator in case of error
+                typingIndicator.style.display = 'none';
+                
+                const errorMsg = document.createElement('div');
+                errorMsg.className = 'nlweb-message nlweb-ai-message';
+                errorMsg.textContent = "Sorry, there was an error connecting to the AI service. Please try again later.";
+                messages.appendChild(errorMsg);
+                messages.scrollTop = messages.scrollHeight;
             });
         }
+        
+        // Allow sending message with Enter key
+        document.getElementById('nlweb-chat-query').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                nlwebSendQuery();
+            }
+        });
     </script>
     <?php
 }
